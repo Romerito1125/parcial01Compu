@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Product</title>
+
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>Edit Product</h2>
+
+    <a href="/products" class="btn btn-primary mb-3">
+        Back to Products
+    </a>
+
+    <form id="edit-product-form">
+
+        <input type="hidden" id="product-id" value="">
+
+        <div class="form-group">
+            <label for="name">Name</label>
+
+            <input
+                type="text"
+                class="form-control"
+                id="name"
+                required>
+        </div>
+
+        <div class="form-group">
+            <label for="price">Price</label>
+
+            <input
+                type="number"
+                class="form-control"
+                id="price"
+                step="0.01"
+                required>
+        </div>
+
+        <div class="form-group">
+            <label for="stock">Stock</label>
+
+            <input
+                type="number"
+                class="form-control"
+                id="stock"
+                required>
+        </div>
+
+        <button
+            type="button"
+            class="btn btn-primary"
+            onclick="updateProduct()">
+            Save Changes
+        </button>
+
+    </form>
+
+</div>
+
+<script src="/static/scriptProducts.js"></script>
+
+<script>
+    // Obtener el ID del producto desde la URL
+    const productId = {{id}};
+
+    // Guardar el ID en el formulario
+    document.getElementById('product-id').value = productId;
+
+    // Obtener información del producto
+    getServiceBase('products')
+        .then(base => fetch(`${base}/api/products/${productId}`))
+        .then(response => response.json())
+        .then(data => {
+
+            document.getElementById('product-id').value = data.id;
+            document.getElementById('name').value = data.name;
+            document.getElementById('price').value = data.price;
+            document.getElementById('stock').value = data.stock;
+
+        })
+        .catch(error => console.error('Error:', error));
+</script>
+
+</body>
+</html>

@@ -1,0 +1,136 @@
+services:
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5001:5001"
+    environment:
+      CONSUL_SERVER_URL: ${CONSUL_SERVER_URL}
+
+  users:
+    build: ./microUsers
+    ports:
+      - "5002:5002"
+    environment:
+      MYSQL_HOST: users_db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: ${USERS_DB_ROOT_PASSWORD}
+      MYSQL_DB: ${USERS_DB_NAME}
+      CONSUL_HOST: consul-client
+      CONSUL_PORT: 8500
+    depends_on:
+      users_db:
+        condition: service_healthy
+      consul-client:
+        condition: service_started
+
+  products:
+    build: ./microProducts
+    ports:
+      - "5003:5003"
+    environment:
+      MYSQL_HOST: products_db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: ${PRODUCTS_DB_ROOT_PASSWORD}
+      MYSQL_DB: ${PRODUCTS_DB_NAME}
+      CONSUL_HOST: consul-client
+      CONSUL_PORT: 8500
+    depends_on:
+      products_db:
+        condition: service_healthy
+      consul-client:
+        condition: service_started
+
+  orders:
+    build: ./microOrders
+    ports:
+      - "5004:5004"
+    environment:
+      MYSQL_HOST: orders_db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: ${ORDERS_DB_ROOT_PASSWORD}
+      MYSQL_DB: ${ORDERS_DB_NAME}
+      CONSUL_HOST: consul-client
+      CONSUL_PORT: 8500
+    depends_on:
+      orders_db:
+        condition: service_healthy
+      consul-client:
+        condition: service_started
+
+  users_db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${USERS_DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${USERS_DB_NAME}
+    ports:
+      - "32001:3306"
+    volumes:
+      - users_db_data:/var/lib/mysql
+      - ./db/init/users.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p${USERS_DB_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  products_db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${PRODUCTS_DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${PRODUCTS_DB_NAME}
+    ports:
+      - "32002:3306"
+    volumes:
+      - products_db_data:/var/lib/mysql
+      - ./db/init/products.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p${PRODUCTS_DB_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  orders_db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${ORDERS_DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${ORDERS_DB_NAME}
+    ports:
+      - "32003:3306"
+    volumes:
+      - orders_db_data:/var/lib/mysql
+      - ./db/init/orders.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p${ORDERS_DB_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  consul-server:
+    image: consul:1.15.4
+    container_name: consul-server
+    command: >
+      agent
+      -server
+      -bootstrap-expect=1
+      -ui
+      -client=0.0.0.0
+    ports:
+      - "8500:8500"
+      - "8600:8600/udp"
+
+  consul-client:
+    image: consul:1.15.4
+    container_name: consul-client
+    command: >
+      agent
+      -client=0.0.0.0
+      -join=consul-server
+
+volumes:
+  users_db_data:
+  products_db_data:
+  orders_db_data:

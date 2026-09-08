@@ -1,0 +1,7 @@
+Flask
+Flask-Cors
+Flask-SQLAlchemy
+PyMySQL
+Flask-Consulate
+requests
+six
