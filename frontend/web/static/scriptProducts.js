@@ -10,30 +10,6 @@ async function getServiceBase(name) {
 
 
 
-function getUserId() {
-    return localStorage.getItem('userId');
-}
-
-
-function getUserName() {
-    return localStorage.getItem('userName');
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-
-    const userId = getUserId();
-
-    if (!userId) {
-        window.location.href = '/';
-        return;
-    }
-
-    document.getElementById('current-user').textContent =
-        getUserName() || 'User';
-
-    getProducts();
-});
-
 async function getProducts() {
     try {
         const base = await getServiceBase('products');

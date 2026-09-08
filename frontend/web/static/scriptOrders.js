@@ -1,18 +1,32 @@
 async function getServiceBase(name) {
 
-    const res = await fetch('/api/discovery');
+    const res = await fetch(
+        '/api/discovery'
+    );
+
 
     if (!res.ok) {
-        throw new Error('Error obteniendo los servicios');
+
+        throw new Error(
+            'Error obteniendo los servicios'
+        );
+
     }
+
 
     const services = await res.json();
 
     const ports = services[name] || [];
 
+
     if (!ports.length) {
-        throw new Error('Service not available: ' + name);
+
+        throw new Error(
+            'Service not available: ' + name
+        );
+
     }
+
 
     return (
         window.location.protocol +
@@ -24,40 +38,103 @@ async function getServiceBase(name) {
 }
 
 
-function getUserId() {
-    return localStorage.getItem('userId');
+/*
+ * ============================================================
+ * JWT
+ * ============================================================
+ */
+
+function getToken() {
+
+    return localStorage.getItem(
+        'token'
+    );
+
 }
 
 
 function getUserName() {
-    return localStorage.getItem('userName');
-}
 
+    return localStorage.getItem(
+        'userName'
+    );
 
-function logout() {
-
-    localStorage.removeItem('userId');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('userEmail');
-
-    window.location.href = '/';
 }
 
 
 /*
- * Comunicación con el microservicio Orders
+ * ============================================================
+ * LOGOUT
+ * ============================================================
  */
+
+function logout() {
+
+    localStorage.removeItem(
+        'token'
+    );
+
+    localStorage.removeItem(
+        'userId'
+    );
+
+    localStorage.removeItem(
+        'userName'
+    );
+
+    localStorage.removeItem(
+        'userEmail'
+    );
+
+
+    window.location.href = '/';
+
+}
+
+
+/*
+ * ============================================================
+ * COMUNICACIÓN CON ORDERS
+ * ============================================================
+ */
+
 async function apiOrders(fetchOptions = {}) {
 
+    const token = getToken();
+
+    console.log('JWT almacenado:', token);
+
+
+    if (!token) {
+
+        console.log('NO HAY JWT EN LOCALSTORAGE');
+
+        logout();
+
+        return null;
+
+    }
+
+
     const base = await getServiceBase('orders');
+
+    console.log('Orders URL:', base + '/api/orders');
+
 
     const headers = Object.assign(
         {},
         fetchOptions.headers || {},
         {
-            'X-User-Id': getUserId()
+            'Authorization': 'Bearer ' + token
         }
     );
+
+
+    console.log(
+        'Authorization enviado:',
+        headers.Authorization
+    );
+
 
     return fetch(
         base + '/api/orders',
@@ -73,26 +150,37 @@ async function apiOrders(fetchOptions = {}) {
 
 
 /*
- * Obtener las órdenes del usuario
+ * ============================================================
+ * OBTENER ÓRDENES
+ * ============================================================
  */
+
 async function getOrders() {
 
     try {
 
-        const response = await apiOrders();
+        const response =
+            await apiOrders();
+
+
+        if (!response) {
+            return;
+        }
 
 
         /*
-         * Si el backend considera que la sesión
-         * ya no es válida.
+         * JWT inválido / expirado
          */
         if (response.status === 401) {
 
             logout();
 
-            alert('Session expired. Please log in again.');
+            alert(
+                'Session expired. Please log in again.'
+            );
 
             return;
+
         }
 
 
@@ -106,93 +194,144 @@ async function getOrders() {
         }
 
 
-        const data = await response.json();
+        const data =
+            await response.json();
 
 
         const orderListBody =
-            document.querySelector('#order-list tbody');
+            document.querySelector(
+                '#order-list tbody'
+            );
 
 
         orderListBody.innerHTML = '';
 
 
-        data.forEach(function (order) {
+        data.forEach(
+            function (order) {
 
-            const row = document.createElement('tr');
-
-
-            /*
-             * Order ID
-             */
-            const idCell = document.createElement('td');
-
-            idCell.textContent = order.id;
-
-            row.appendChild(idCell);
-
-
-            /*
-             * Total
-             */
-            const totalCell = document.createElement('td');
-
-            totalCell.textContent = order.total;
-
-            row.appendChild(totalCell);
-
-
-            /*
-             * Status
-             */
-            const statusCell = document.createElement('td');
-
-            statusCell.textContent = order.status;
-
-            row.appendChild(statusCell);
-
-
-            /*
-             * Created At
-             */
-            const createdCell = document.createElement('td');
-
-            createdCell.textContent = order.created_at;
-
-            row.appendChild(createdCell);
-
-
-            /*
-             * Items
-             */
-            const itemsCell = document.createElement('td');
-
-
-            const itemsText = (order.items || [])
-                .map(function (item) {
-
-                    return (
-                        'Product ' +
-                        item.product_id +
-                        ' x' +
-                        item.quantity
+                const row =
+                    document.createElement(
+                        'tr'
                     );
 
-                })
-                .join(', ');
+
+                /*
+                 * Order ID
+                 */
+                const idCell =
+                    document.createElement(
+                        'td'
+                    );
+
+                idCell.textContent =
+                    order.id;
+
+                row.appendChild(
+                    idCell
+                );
 
 
-            itemsCell.textContent = itemsText;
+                /*
+                 * Total
+                 */
+                const totalCell =
+                    document.createElement(
+                        'td'
+                    );
 
-            row.appendChild(itemsCell);
+                totalCell.textContent =
+                    order.total;
+
+                row.appendChild(
+                    totalCell
+                );
 
 
-            orderListBody.appendChild(row);
+                /*
+                 * Status
+                 */
+                const statusCell =
+                    document.createElement(
+                        'td'
+                    );
 
-        });
+                statusCell.textContent =
+                    order.status;
+
+                row.appendChild(
+                    statusCell
+                );
+
+
+                /*
+                 * Created At
+                 */
+                const createdCell =
+                    document.createElement(
+                        'td'
+                    );
+
+                createdCell.textContent =
+                    order.created_at;
+
+                row.appendChild(
+                    createdCell
+                );
+
+
+                /*
+                 * Items
+                 */
+                const itemsCell =
+                    document.createElement(
+                        'td'
+                    );
+
+
+                const itemsText =
+                    (order.items || [])
+
+                        .map(
+                            function (item) {
+
+                                return (
+                                    'Product ' +
+                                    item.product_id +
+                                    ' x' +
+                                    item.quantity
+                                );
+
+                            }
+                        )
+
+                        .join(', ');
+
+
+                itemsCell.textContent =
+                    itemsText;
+
+
+                row.appendChild(
+                    itemsCell
+                );
+
+
+                orderListBody.appendChild(
+                    row
+                );
+
+            }
+        );
+
 
     } catch (error) {
 
-        console.error('Error:', error);
+        console.error(
+            'Error:',
+            error
+        );
+
 
         alert(
             'Error obteniendo las órdenes: ' +
@@ -204,18 +343,27 @@ async function getOrders() {
 
 
 /*
- * Crear una orden
+ * ============================================================
+ * CREAR ORDEN
+ * ============================================================
  */
+
 async function createOrder() {
 
-    const productId = parseInt(
-        document.getElementById('product-id').value
-    );
+    const productId =
+        parseInt(
+            document.getElementById(
+                'product-id'
+            ).value
+        );
 
 
-    const quantity = parseInt(
-        document.getElementById('quantity').value
-    );
+    const quantity =
+        parseInt(
+            document.getElementById(
+                'quantity'
+            ).value
+        );
 
 
     const data = {
@@ -234,37 +382,59 @@ async function createOrder() {
 
     try {
 
-        const response = await apiOrders({
+        const response =
+            await apiOrders({
 
-            method: 'POST',
+                method: 'POST',
 
-            headers: {
-                'Content-Type': 'application/json'
-            },
+                headers: {
 
-            body: JSON.stringify(data)
+                    'Content-Type':
+                        'application/json'
 
-        });
+                },
+
+                body:
+                    JSON.stringify(
+                        data
+                    )
+
+            });
 
 
-        const result = await response.json();
-
-
-        /*
-         * Sesión inválida
-         */
-        if (response.status === 401) {
-
-            logout();
-
-            alert('Session expired. Please log in again.');
-
+        if (!response) {
             return;
         }
 
 
+        const result =
+            await response.json();
+
+
         /*
-         * Otro error del backend
+         * JWT inválido / expirado
+         */
+        if (response.status === 401) {
+
+            const errorData = await response.json();
+
+            console.log(
+                '401 recibido desde Orders:',
+                errorData
+            );
+
+            alert(
+                'Orders respondió 401: ' +
+                (errorData.message || 'Sin mensaje')
+            );
+
+            return;
+
+        }
+
+
+        /*
+         * Error del backend
          */
         if (!response.ok) {
 
@@ -284,13 +454,18 @@ async function createOrder() {
         /*
          * Limpiar formulario
          */
-        document.getElementById('product-id').value = '';
+        document.getElementById(
+            'product-id'
+        ).value = '';
 
-        document.getElementById('quantity').value = '';
+
+        document.getElementById(
+            'quantity'
+        ).value = '';
 
 
         /*
-         * Recargar órdenes
+         * Actualizar órdenes
          */
         getOrders();
 
@@ -307,60 +482,71 @@ async function createOrder() {
 
 
 /*
- * Inicialización de la página
+ * ============================================================
+ * INICIALIZACIÓN
+ * ============================================================
  */
-document.addEventListener('DOMContentLoaded', function () {
 
-    const userId = getUserId();
+document.addEventListener(
+    'DOMContentLoaded',
+    function () {
+
+        const token =
+            getToken();
 
 
-    /*
-     * Verificar que el usuario haya iniciado sesión
-     */
-    if (!userId) {
+        /*
+         * No existe JWT
+         */
+        if (!token) {
 
-        window.location.href = '/';
+            window.location.href = '/';
 
-        return;
+            return;
+
+        }
+
+
+        /*
+         * Mostrar usuario
+         */
+        document.getElementById(
+            'current-user'
+        ).textContent =
+            getUserName() || 'User';
+
+
+        /*
+         * Cargar órdenes
+         */
+        getOrders();
+
+
+        /*
+         * Cargar productos
+         */
+        getProductForOrder();
+
+
+        /*
+         * Configurar formulario
+         */
+        const form =
+            document.getElementById(
+                'add-order-form'
+            );
+
+
+        form.addEventListener(
+            'submit',
+            function (event) {
+
+                event.preventDefault();
+
+                createOrder();
+
+            }
+        );
 
     }
-
-
-    /*
-     * Mostrar usuario actual
-     */
-    document.getElementById('current-user').textContent =
-        getUserName() || 'User';
-
-
-    /*
-     * Cargar órdenes automáticamente
-     */
-    getOrders();
-
-
-    /*
-     * Cargar productos automáticamente
-     *
-     * Esta función está definida
-     * en scriptProducts.js
-     */
-    getProductForOrder();
-
-
-    /*
-     * Configurar formulario
-     */
-    const form =
-        document.getElementById('add-order-form');
-
-
-    form.addEventListener('submit', function (event) {
-
-        event.preventDefault();
-
-        createOrder();
-
-    });
-
-});
+);
