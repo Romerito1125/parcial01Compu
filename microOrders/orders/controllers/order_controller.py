@@ -17,10 +17,6 @@ order_controller = Blueprint(
 )
 
 
-# ============================================================
-# BUSCAR PRODUCTS EN CONSUL
-# ============================================================
-
 def _products_service_url():
 
     consul_host = Config.CONSUL_HOST
@@ -56,9 +52,6 @@ def _products_service_url():
     )
 
 
-# ============================================================
-# ORDER → DICT
-# ============================================================
 
 def _order_dict(order):
 
@@ -84,9 +77,7 @@ def _order_dict(order):
     }
 
 
-# ============================================================
-# ORDER ITEM → DICT
-# ============================================================
+
 
 def _item_dict(item):
 
@@ -105,9 +96,6 @@ def _item_dict(item):
     }
 
 
-# ============================================================
-# GET ORDERS
-# ============================================================
 
 @order_controller.route(
     '/api/orders',
@@ -162,10 +150,6 @@ def get_orders():
     )
 
 
-# ============================================================
-# GET ONE ORDER
-# ============================================================
-
 @order_controller.route(
     '/api/orders/<int:order_id>',
     methods=['GET']
@@ -208,11 +192,6 @@ def get_order(order_id):
         order_data
     )
 
-
-# ============================================================
-# CREATE ORDER
-# ============================================================
-
 @order_controller.route(
     '/api/orders',
     methods=['POST']
@@ -228,18 +207,6 @@ def create_order():
     )
 
 
-    urlProducts = _products_service_url()
-
-
-    print(
-        f"URL del microservicio de productos: {urlProducts}"
-    )
-
-
-    # ========================================================
-    # VALIDAR PRODUCTS
-    # ========================================================
-
     if (
         not products
         or not isinstance(products, list)
@@ -253,12 +220,14 @@ def create_order():
         }), 400
 
 
+
     if any(
 
-        'product_id' not in p
-        or p.get('quantity', 0) <= 0
+        'product_id' not in product
+        or 'quantity' not in product
+        or product.get('quantity', 0) <= 0
 
-        for p in products
+        for product in products
 
     ):
 
@@ -269,10 +238,6 @@ def create_order():
 
         }), 400
 
-
-    # ========================================================
-    # PRODUCTS SERVICE
-    # ========================================================
 
     products_url = _products_service_url()
 
@@ -287,29 +252,42 @@ def create_order():
         }), 503
 
 
+
+
     lines = []
 
 
-    # ========================================================
-    # OBTENER PRODUCTOS
-    # ========================================================
+    for product_request in products:
 
-    for p in products:
-
-        product_id = p[
+        product_id = product_request[
             'product_id'
         ]
 
-        quantity = p[
+
+        quantity = product_request[
             'quantity'
         ]
 
 
-        response = requests.get(
+        try:
 
-            f'{products_url}/api/products/{product_id}'
+            response = requests.get(
 
-        )
+                f'{products_url}/api/products/{product_id}',
+
+                timeout=3
+
+            )
+
+
+        except requests.RequestException:
+
+            return jsonify({
+
+                'message':
+                    'Error comunicándose con el microservicio de productos'
+
+            }), 503
 
 
         if response.status_code != 200:
@@ -330,7 +308,10 @@ def create_order():
             return jsonify({
 
                 'message':
-                    f'Stock insuficiente para el producto {product_id}'
+                    f'Stock insuficiente para el producto {product["name"]} '
+                    f'(ID: {product_id}). '
+                    f'Disponible: {product["stock"]}, '
+                    f'Solicitado: {quantity}'
 
             }), 400
 
@@ -354,11 +335,6 @@ def create_order():
 
         })
 
-
-    # ========================================================
-    # CALCULAR TOTAL
-    # ========================================================
-
     total = sum(
 
         line['quantity'] *
@@ -368,32 +344,42 @@ def create_order():
 
     )
 
-
-    # ========================================================
-    # ACTUALIZAR STOCK
-    # ========================================================
-
     for line in lines:
 
-        response = requests.put(
+        try:
 
-            f'{products_url}/api/products/{line["product_id"]}',
+            response = requests.put(
 
-            json={
+                f'{products_url}/api/products/{line["product_id"]}',
 
-                'name':
-                    line['name'],
+                json={
 
-                'price':
-                    line['price'],
+                    'name':
+                        line['name'],
 
-                'stock':
-                    line['stock'] -
-                    line['quantity']
+                    'price':
+                        line['price'],
 
-            }
+                    'stock':
+                        line['stock'] -
+                        line['quantity']
 
-        )
+                },
+
+                timeout=3
+
+            )
+
+
+        except requests.RequestException:
+
+            return jsonify({
+
+                'message':
+                    'Error comunicándose con el microservicio de productos '
+
+            }), 503
+
 
 
         if response.status_code != 200:
@@ -406,10 +392,6 @@ def create_order():
 
             }), 500
 
-
-    # ========================================================
-    # CREAR ORDER
-    # ========================================================
 
     order = Order(
 
@@ -426,11 +408,6 @@ def create_order():
             'confirmed'
 
     )
-
-
-    # ========================================================
-    # ORDER ITEMS
-    # ========================================================
 
     for line in lines:
 
@@ -455,17 +432,27 @@ def create_order():
 
         )
 
+    try:
 
-    # ========================================================
-    # GUARDAR
-    # ========================================================
+        db.session.add(
+            order
+        )
 
-    db.session.add(
-        order
-    )
+        db.session.commit()
 
-    db.session.commit()
 
+    except Exception as error:
+
+        db.session.rollback()
+
+
+        return jsonify({
+
+            'message':
+                'Error guardando la orden: '
+                + str(error)
+
+        }), 500
 
     return jsonify({
 
@@ -476,9 +463,6 @@ def create_order():
             order.id,
 
         'total':
-            total,
-
-        'urlProducts':
-            urlProducts
+            total
 
     }), 201

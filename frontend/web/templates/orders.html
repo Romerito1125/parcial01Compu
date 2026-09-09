@@ -1,8 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Order Management</title>
 
@@ -12,230 +18,595 @@
     >
 
     <style>
+
         body {
+
             padding-top: 70px;
-            padding-bottom: 20px;
+
+            padding-bottom: 40px;
+
         }
 
-        .navbar {
-            margin-bottom: 20px;
-        }
-
-        .form-container {
-            max-width: 500px;
-            margin: 0 auto;
-        }
 
         .orders-container {
+
             max-width: 1100px;
+
             margin: 0 auto;
+
         }
+
+
+        .detail-item {
+
+            border-bottom: 1px solid #dee2e6;
+
+            padding: 10px 0;
+
+        }
+
+
+        .detail-item:last-child {
+
+            border-bottom: none;
+
+        }
+
     </style>
+
 </head>
+
 
 <body>
 
-<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
 
-    <a class="navbar-brand" href="/orders">
-        Store Management
-    </a>
 
-    <button
-        class="navbar-toggler"
-        type="button"
-        data-toggle="collapse"
-        data-target="#navbarCollapse"
-        aria-controls="navbarCollapse"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-    >
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    
-    <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
-                <a href="products">
-                <button type="button" class="btn btn-outline-light" onclick="logout()">
-                    Productos
-                </button>
-                </a>
-            </li>
-        </ul>
-        <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
-                <a href="users">
-                <button type="button" class="btn btn-outline-light">
-                    Usuarios
-                </button>
-                </a>
-            </li>
-        </ul>
-        <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
-                <a href="/orders">
-                <button type="button" class="btn btn-outline-light">
-                    Ordenes
-                </button>
-                </a>
-            </li>
-        </ul>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
 
-    <div class="collapse navbar-collapse" id="navbarCollapse">
-        <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
+
+        <a
+            class="navbar-brand"
+            href="/orders"
+        >
+            Store Management
+        </a>
+
+
+        <div
+            class="collapse navbar-collapse"
+            id="navbarCollapse"
+        >
+
+
+            <ul class="navbar-nav ml-auto">
+
+
+                <li class="nav-item mr-2">
+
+                    <a
+                        href="/products"
+                        class="btn btn-outline-light"
+                    >
+                        Productos
+                    </a>
+
+                </li>
+
+
+                <li class="nav-item mr-2">
+
+                    <a
+                        href="/users"
+                        class="btn btn-outline-light"
+                    >
+                        Usuarios
+                    </a>
+
+                </li>
+
+
+                <li class="nav-item mr-2">
+
+                    <a
+                        href="/orders"
+                        class="btn btn-outline-light"
+                    >
+                        Ordenes
+                    </a>
+
+                </li>
+
+
+                <li class="nav-item">
+
+                    <button
+                        type="button"
+                        class="btn btn-outline-danger"
+                        onclick="logout()"
+                    >
+                        Logout
+                    </button>
+
+                </li>
+
+
+            </ul>
+
+
+        </div>
+
+
+    </nav>
+
+
+
+
+    <div class="container orders-container">
+
+
+
+        <div class="mb-4">
+
+            <h2>
+
+                Welcome,
+
+                <span id="current-user"></span>
+
+            </h2>
+
+        </div>
+
+
+        <div class="card mb-5">
+
+
+            <div class="card-header">
+
+                <div
+                    class="d-flex justify-content-between align-items-center"
+                >
+
+                    <h3 class="mb-0">
+                        Products List
+                    </h3>
+
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        onclick="getProductForOrder()"
+                    >
+                        Refresh Products
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="card-body">
+
+
+                <div class="table-responsive">
+
+
+                    <table
+                        id="product-list"
+                        class="table table-striped table-bordered"
+                    >
+
+
+                        <thead class="thead-dark">
+
+                            <tr>
+
+                                <th>ID</th>
+
+                                <th>Name</th>
+
+                                <th>Price</th>
+
+                                <th>Stock</th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                        </tbody>
+
+
+                    </table>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+
+
+        <div class="card mb-4">
+
+
+            <div class="card-header">
+
+                <h3 class="mb-0">
+                    Add Product to Order
+                </h3>
+
+            </div>
+
+
+            <div class="card-body">
+
+
+                <form id="add-product-form">
+
+
+                    <div class="form-group">
+
+
+                        <label for="product-id">
+
+                            Product ID
+
+                        </label>
+
+
+                        <input
+                            type="number"
+                            class="form-control"
+                            id="product-id"
+                            min="1"
+                            required
+                        >
+
+
+                    </div>
+
+
+
+                    <div class="form-group">
+
+
+                        <label for="quantity">
+
+                            Quantity
+
+                        </label>
+
+
+                        <input
+                            type="number"
+                            class="form-control"
+                            id="quantity"
+                            min="1"
+                            required
+                        >
+
+
+                    </div>
+
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+
+                        Add Product
+
+                    </button
+
+                </form>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- =================================================
+             ORDEN ACTUAL
+             ================================================= -->
+
+        <div class="card mb-5">
+
+
+            <div class="card-header">
+
+                <h3 class="mb-0">
+                    Current Order
+                </h3>
+
+            </div>
+
+
+            <div class="card-body">
+
+
+                <div class="table-responsive">
+
+
+                    <table
+                        id="current-order-list"
+                        class="table table-striped table-bordered"
+                    >
+
+
+                        <thead class="thead-dark">
+
+                            <tr>
+
+                                <th>Product ID</th>
+
+                                <th>Quantity</th>
+
+                                <th>Action</th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                        </tbody>
+
+
+                    </table>
+
+
+                </div>
+
+
+
                 <button
                     type="button"
-                    class="btn btn-outline-light"
-                    onclick="logout()"
+                    class="btn btn-success"
+                    onclick="createOrder()"
                 >
-                    Logout
-                </button>
-            </li>
-        </ul>
-    </div>
 
-</nav>
-
-<h2 class="mt-5">Products List</h2>
-
-    <table id="product-list" class="table table-striped">
-
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Price</th>
-                <th>Stock</th>
-            </tr>
-        </thead>
-
-        <tbody></tbody>
-
-    </table>
-
-</div>
-
-
-<div class="container orders-container">
-
-    <!-- Información del usuario -->
-    <div class="mb-4">
-        <h2>
-            Welcome, <span id="current-user"></span>
-        </h2>
-    </div>
-
-
-    <!-- Crear orden -->
-    <div class="card mb-5">
-
-        <div class="card-header">
-            <h3 class="mb-0">Place Order</h3>
-        </div>
-
-        <div class="card-body">
-
-            <form id="add-order-form">
-
-                <div class="form-group">
-                    <label for="product-id">
-                        Product ID
-                    </label>
-
-                    <input
-                        type="number"
-                        class="form-control"
-                        id="product-id"
-                        min="1"
-                        required
-                    >
-                </div>
-
-
-                <div class="form-group">
-                    <label for="quantity">
-                        Quantity
-                    </label>
-
-                    <input
-                        type="number"
-                        class="form-control"
-                        id="quantity"
-                        min="1"
-                        required
-                    >
-                </div>
-
-
-                <button
-                    type="submit"
-                    class="btn btn-primary"
-                >
                     Create Order
+
                 </button>
 
-            </form>
+
+            </div>
+
 
         </div>
+
+
+
+        <!-- =================================================
+             MIS ORDENES
+             ================================================= -->
+
+        <div class="card">
+
+
+            <div class="card-header">
+
+
+                <div
+                    class="d-flex justify-content-between align-items-center"
+                >
+
+
+                    <h3 class="mb-0">
+                        My Orders
+                    </h3>
+
+
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        onclick="getOrders()"
+                    >
+
+                        Refresh Orders
+
+                    </button>
+
+
+                </div>
+
+
+            </div>
+
+
+
+            <div class="card-body">
+
+
+                <div class="table-responsive">
+
+
+                    <table
+                        id="order-list"
+                        class="table table-striped table-bordered"
+                    >
+
+
+                        <thead class="thead-dark">
+
+
+                            <tr>
+
+                                <th>Order ID</th>
+
+                                <th>Total</th>
+
+                                <th>Status</th>
+
+                                <th>Created At</th>
+
+                                <th>Items</th>
+
+                                <th>Action</th>
+
+                            </tr>
+
+
+                        </thead>
+
+
+
+                        <tbody>
+
+                        </tbody>
+
+
+                    </table>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
 
     </div>
 
 
-    <!-- Mis órdenes -->
-    <div>
 
-        <div class="d-flex justify-content-between align-items-center mb-3">
+    <!-- =====================================================
+         MODAL DETALLE DE ORDEN
+         ===================================================== -->
 
-            <h3 class="mb-0">
-                My Orders
-            </h3>
+    <div
+        class="modal fade"
+        id="orderDetailModal"
+        tabindex="-1"
+        role="dialog"
+        aria-labelledby="orderDetailModalLabel"
+        aria-hidden="true"
+    >
 
-            <button
-                type="button"
-                class="btn btn-secondary"
-                onclick="getOrders()"
-            >
-                Refresh Orders
-            </button>
+
+        <div
+            class="modal-dialog modal-lg"
+            role="document"
+        >
+
+
+            <div class="modal-content">
+
+
+                <div class="modal-header">
+
+
+                    <h5
+                        class="modal-title"
+                        id="orderDetailModalLabel"
+                    >
+                        Order Detail
+                    </h5>
+
+
+                    <button
+                        type="button"
+                        class="close"
+                        data-dismiss="modal"
+                        aria-label="Close"
+                    >
+
+                        <span aria-hidden="true">
+                            &times;
+                        </span>
+
+                    </button>
+
+
+                </div>
+
+
+
+                <div class="modal-body">
+
+
+                    <div
+                        id="order-detail-content"
+                    >
+
+                        <!--
+                            El detalle se carga
+                            mediante JavaScript
+                        -->
+
+                    </div>
+
+
+                </div>
+
+
+
+                <div class="modal-footer">
+
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-dismiss="modal"
+                    >
+
+                        Close
+
+                    </button>
+
+
+                </div>
+
+
+            </div>
+
 
         </div>
 
-
-        <div class="table-responsive">
-
-            <table
-                id="order-list"
-                class="table table-striped table-bordered"
-            >
-
-                <thead class="thead-dark">
-
-                    <tr>
-                        <th>Order ID</th>
-                        <th>Total</th>
-                        <th>Status</th>
-                        <th>Created At</th>
-                        <th>Items</th>
-                    </tr>
-
-                </thead>
-
-                <tbody>
-                    <!-- Las órdenes se cargan mediante JavaScript -->
-                </tbody>
-
-            </table>
-
-        </div>
 
     </div>
 
-</div>
 
 
-<script src="/static/scriptOrders.js"></script>
-<script src="/static/scriptProducts.js"></script>
+    <!-- =====================================================
+         SCRIPTS
+         ===================================================== -->
+
+    <script
+        src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+    ></script>
+
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"
+    ></script>
+
+
+    <script
+        src="/static/scriptOrders.js"
+    ></script>
+
+
+    <script
+        src="/static/scriptProducts.js"
+    ></script>
+
 
 </body>
+
 </html>

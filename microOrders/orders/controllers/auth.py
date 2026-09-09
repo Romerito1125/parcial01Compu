@@ -7,10 +7,6 @@ from flask import request, jsonify, g
 from config import Config
 
 
-# ============================================================
-# BUSCAR MICROSERVICIO USERS EN CONSUL
-# ============================================================
-
 def _service_url(service_name):
 
     consul_host = Config.CONSUL_HOST
@@ -51,18 +47,10 @@ def _service_url(service_name):
     )
 
 
-# ============================================================
-# VALIDAR USUARIO MEDIANTE JWT
-# ============================================================
-
 def user_required(f):
 
     @functools.wraps(f)
     def decorated(*args, **kwargs):
-
-        # ====================================================
-        # OBTENER AUTHORIZATION
-        # ====================================================
 
         auth_header = request.headers.get(
             'Authorization',
@@ -76,9 +64,6 @@ def user_required(f):
         )
 
 
-        # ====================================================
-        # COMPROBAR BEARER
-        # ====================================================
 
         if not auth_header.startswith('Bearer '):
 
@@ -90,10 +75,6 @@ def user_required(f):
                 'message': 'Token no proporcionado'
             }), 401
 
-
-        # ====================================================
-        # EXTRAER JWT
-        # ====================================================
 
         token = auth_header.split(
             ' ',
@@ -117,11 +98,6 @@ def user_required(f):
             token
         )
 
-
-        # ====================================================
-        # BUSCAR USERS MEDIANTE CONSUL
-        # ====================================================
-
         users_url = _service_url(
             'users'
         )
@@ -141,9 +117,6 @@ def user_required(f):
         )
 
 
-        # ====================================================
-        # ENVIAR JWT A USERS
-        # ====================================================
 
         try:
 
@@ -176,9 +149,6 @@ def user_required(f):
             }), 503
 
 
-        # ====================================================
-        # MOSTRAR RESPUESTA DE USERS
-        # ====================================================
 
         print(
             'Respuesta de Users:',
@@ -190,10 +160,6 @@ def user_required(f):
             response.text
         )
 
-
-        # ====================================================
-        # JWT INVÁLIDO / EXPIRADO
-        # ====================================================
 
         if response.status_code != 200:
 
@@ -216,10 +182,6 @@ def user_required(f):
 
             }), 401
 
-
-        # ====================================================
-        # OBTENER USUARIO VALIDADO
-        # ====================================================
 
         data = response.json()
 
@@ -249,10 +211,6 @@ def user_required(f):
             }), 401
 
 
-        # ====================================================
-        # GUARDAR USUARIO EN g
-        # ====================================================
-
         g.user = {
 
             'id': user['id'],
@@ -268,11 +226,6 @@ def user_required(f):
             'Usuario autenticado en Orders:',
             g.user
         )
-
-
-        # ====================================================
-        # CONTINUAR CON EL ENDPOINT
-        # ====================================================
 
         return f(
             *args,

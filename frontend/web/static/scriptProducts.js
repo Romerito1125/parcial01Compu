@@ -75,45 +75,170 @@ async function getProducts() {
 
 
 
-async function getProductForOrder(){
+/*
+ * ============================================================
+ * OBTENER PRODUCTOS PARA CREAR UNA ORDEN
+ * ============================================================
+ */
+
+async function getProductForOrder() {
+
     try {
-        const base = await getServiceBase('products');
-        const response = await fetch(base + '/api/products');
-        const data = await response.json();
-        console.log(data);
 
-        var productListBody = document.querySelector('#product-list tbody');
-        productListBody.innerHTML = '';
 
-        data.forEach(product => {
-            var row = document.createElement('tr');
+        const base =
+            await getServiceBase(
+                'products'
+            );
 
-            // ID
-            var idCell = document.createElement('td');
-            idCell.textContent = product.id;
-            row.appendChild(idCell);
 
-            // Name
-            var nameCell = document.createElement('td');
-            nameCell.textContent = product.name;
-            row.appendChild(nameCell);
+        const response =
+            await fetch(
+                base + '/api/products'
+            );
 
-            // Price
-            var priceCell = document.createElement('td');
-            priceCell.textContent = product.price;
-            row.appendChild(priceCell);
 
-            // Stock
-            var stockCell = document.createElement('td');
-            stockCell.textContent = product.stock;
-            row.appendChild(stockCell);
-      
+        if (!response.ok) {
 
-            productListBody.appendChild(row);
-        });
+            throw new Error(
+                'Error obteniendo productos'
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        const productListBody =
+            document.querySelector(
+                '#product-list tbody'
+            );
+
+
+        productListBody.innerHTML =
+            '';
+
+
+        data.forEach(
+
+            function (product) {
+
+
+                const row =
+                    document.createElement(
+                        'tr'
+                    );
+
+
+                /*
+                 * ID
+                 */
+
+                const idCell =
+                    document.createElement(
+                        'td'
+                    );
+
+
+                idCell.textContent =
+                    product.id;
+
+
+                row.appendChild(
+                    idCell
+                );
+
+
+
+                /*
+                 * Name
+                 */
+
+                const nameCell =
+                    document.createElement(
+                        'td'
+                    );
+
+
+                nameCell.textContent =
+                    product.name;
+
+
+                row.appendChild(
+                    nameCell
+                );
+
+
+
+                /*
+                 * Price
+                 */
+
+                const priceCell =
+                    document.createElement(
+                        'td'
+                    );
+
+
+                priceCell.textContent =
+                    product.price;
+
+
+                row.appendChild(
+                    priceCell
+                );
+
+
+
+                /*
+                 * Stock
+                 */
+
+                const stockCell =
+                    document.createElement(
+                        'td'
+                    );
+
+
+                stockCell.textContent =
+                    product.stock;
+
+
+                row.appendChild(
+                    stockCell
+                );
+
+
+
+                productListBody.appendChild(
+                    row
+                );
+
+
+            }
+
+        );
+
+
     } catch (error) {
-        console.error('Error:', error);
+
+
+        console.error(
+            'Error obteniendo productos:',
+            error
+        );
+
+
+        alert(
+            'Error obteniendo productos: ' +
+            error.message
+        );
+
+
     }
+
 }
 
 async function createProduct() {
