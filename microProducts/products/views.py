@@ -23,11 +23,11 @@ with app.app_context():
     consul.apply_remote_config(namespace='mynamespace/')
     consul.register_service(
         name='products',
-        address=container_ip,
+        address='products',
         interval='10s',
         tags=['products', 'flask'],
         port=5003,
-        httpcheck=f'http://{container_ip}:5003/healthcheck'
+        httpcheck=f'http://products:5003/healthcheck'
     )
 
 

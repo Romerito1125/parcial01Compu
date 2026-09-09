@@ -77,7 +77,7 @@ with app.app_context():
 
         name='orders',
 
-        address=container_ip,
+        address='orders',
 
         interval='10s',
 
@@ -89,7 +89,7 @@ with app.app_context():
         port=5004,
 
         httpcheck=
-            f'http://{container_ip}:5004/healthcheck'
+            f'http://orders:5004/healthcheck'
 
     )
 
