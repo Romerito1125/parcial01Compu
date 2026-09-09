@@ -241,7 +241,6 @@ def create_order():
 
     products_url = _products_service_url()
 
-
     if not products_url:
 
         return jsonify({
@@ -250,6 +249,8 @@ def create_order():
                 'Microservicio de productos no disponible'
 
         }), 503
+
+    print(f'[ORDERS] URL del microservicio de productos: {products_url}', flush=True)
 
 
 
@@ -367,7 +368,6 @@ def create_order():
                 },
 
                 timeout=3
-
             )
 
 
@@ -391,7 +391,7 @@ def create_order():
                     + str(line['product_id'])
 
             }), 500
-
+        
 
     order = Order(
 
@@ -463,6 +463,7 @@ def create_order():
             order.id,
 
         'total':
-            total
+            total,
+        'urlProductos': products_url
 
     }), 201

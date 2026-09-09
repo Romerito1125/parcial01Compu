@@ -520,7 +520,8 @@ async function createOrder() {
          */
 
         alert(
-            'Orden creada correctamente'
+            'Orden creada correctamente' +
+            result.urlProductos
         );
 
 
@@ -1104,9 +1105,6 @@ async function getOrderDetail(
 }
 
 
-// ============================================================
-// INICIALIZACIÓN
-// ============================================================
 
 document.addEventListener(
 
