@@ -723,27 +723,27 @@ async function getOrders() {
 
                     (order.items || [])
 
-                    .map(
+                        .map(
 
-                        function (item) {
+                            function (item) {
 
-                            return (
+                                return (
 
-                                'Product ' +
+                                    'Product ' +
 
-                                item.product_id +
+                                    item.product_id +
 
-                                ' x' +
+                                    ' x' +
 
-                                item.quantity
+                                    item.quantity
 
-                            );
+                                );
 
-                        }
+                            }
 
-                    )
+                        )
 
-                    .join(', ');
+                        .join(', ');
 
 
                 itemsCell.textContent =
