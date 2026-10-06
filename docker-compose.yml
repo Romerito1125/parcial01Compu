@@ -24,6 +24,23 @@ services:
         condition: service_healthy
       consul-client:
         condition: service_started
+  users1:
+    build: ./microUsers
+    restart: always
+    ports:
+      - "3011:5002"
+    environment:
+      MYSQL_HOST: users_db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: ${USERS_DB_ROOT_PASSWORD}
+      MYSQL_DB: ${USERS_DB_NAME}
+      CONSUL_HOST: consul-client
+      CONSUL_PORT: 8500
+    depends_on:
+      users_db:
+        condition: service_healthy
+      consul-client:
+        condition: service_started
 
   products:
     build: ./microProducts
@@ -42,7 +59,23 @@ services:
         condition: service_healthy
       consul-client:
         condition: service_started
-
+  products2:
+    build: ./microProducts
+    restart: always
+    ports:
+      - "3012:5003"
+    environment:
+      MYSQL_HOST: products_db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: ${PRODUCTS_DB_ROOT_PASSWORD}
+      MYSQL_DB: ${PRODUCTS_DB_NAME}
+      CONSUL_HOST: consul-client
+      CONSUL_PORT: 8500
+    depends_on:
+      products_db:
+        condition: service_healthy
+      consul-client:
+        condition: service_started
   orders:
     build: ./microOrders
     restart: always
@@ -60,7 +93,23 @@ services:
         condition: service_healthy
       consul-client:
         condition: service_started
-
+  orders1:
+    build: ./microOrders
+    restart: always
+    ports:
+      - "3013:5004"
+    environment:
+      MYSQL_HOST: orders_db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: ${ORDERS_DB_ROOT_PASSWORD}
+      MYSQL_DB: ${ORDERS_DB_NAME}
+      CONSUL_HOST: consul-client
+      CONSUL_PORT: 8500
+    depends_on:
+      orders_db:
+        condition: service_healthy
+      consul-client:
+        condition: service_started
   users_db:
     image: mysql:5.7
     restart: always
