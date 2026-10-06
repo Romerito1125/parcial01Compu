@@ -9,8 +9,9 @@ services:
 
   users:
     build: ./microUsers
+    restart: always
     ports:
-      - "5002:5002"
+      - "3001:5002"
     environment:
       MYSQL_HOST: users_db
       MYSQL_USER: root
@@ -26,8 +27,9 @@ services:
 
   products:
     build: ./microProducts
+    restart: always
     ports:
-      - "5003:5003"
+      - "3002:5003"
     environment:
       MYSQL_HOST: products_db
       MYSQL_USER: root
@@ -43,8 +45,9 @@ services:
 
   orders:
     build: ./microOrders
+    restart: always
     ports:
-      - "5004:5004"
+      - "3003:5004"
     environment:
       MYSQL_HOST: orders_db
       MYSQL_USER: root
@@ -111,6 +114,7 @@ services:
 
   consul-server:
     image: consul:1.15.4
+    restart: always
     container_name: consul-server
     command: >
       agent
@@ -124,6 +128,7 @@ services:
 
   consul-client:
     image: consul:1.15.4
+    restart: always
     container_name: consul-client
     command: >
       agent
