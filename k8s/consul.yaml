@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consul-server
+  namespace: microapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: consul-server
+  template:
+    metadata:
+      labels:
+        app: consul-server
+    spec:
+      containers:
+        - name: consul
+          image: consul:1.15.4
+          args:
+            - agent
+            - -server
+            - -bootstrap-expect=1
+            - -ui
+            - -client=0.0.0.0
+          ports:
+            - containerPort: 8500
+            - containerPort: 8600
+              protocol: UDP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: consul-server
+  namespace: microapp
+spec:
+  type: ClusterIP
+  selector:
+    app: consul-server
+  ports:
+    - name: http
+      port: 8500
+      targetPort: 8500
+    - name: dns
+      port: 8600
+      targetPort: 8600
+      protocol: UDP
